@@ -1,0 +1,39 @@
+%% Assignment 1 %%
+
+function zero=propagator(E)
+hbar2 = 0.076199682;
+m=1;
+b=0.6;
+V0=10;
+
+% defining alpha for allowable region, beta for forbidden region
+alpha = sqrt(2.*m*E/hbar2);  
+beta  = sqrt(2.*m*(V0-E)/hbar2);
+
+% defining psi for region to the left, x<b psi(x)=C*e^(Bx), choose C=1
+psi = 1;
+psiPrime = 1*beta;
+
+% elements of the propagator matrix
+p11 = @(x) cos(alpha(E).*(x-b));
+p12 = @(x) (1./alpha(E))*sin(alpha(E).*(x-b));
+p21 = @(x) -alpha(E).*sin(alpha(E).*(x-b));
+p22 = @(x) cos(alpha(E).*(x-b));
+
+% define linspace for the allowable region
+xlin = linspace(x,b,1000);
+
+% 
+psiX=0;
+psiXP=0;
+
+% propagate function through the allowable zone
+for step=xlin:
+    [psiX; psiXP] = [p11(step), p12(step); p21(step), p22(step)] * [psi; psiPrime];
+
+
+
+
+
+
+end
