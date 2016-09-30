@@ -1,65 +1,53 @@
 %% Assignment 1 %%
-
-
 %% Question 1:
 % n_zeros = sum(abs(diff(sign(zeros)))/2);
 % define energy linspace to investigate a region of energies
 % define propArray to be constants used for propagation method
 format long
+
 % define constants and energy space
 hbar2 = 0.076199682;
 w=0.6;
 s=0.6;
 m=1;
 V0=10;
-beta = @(E) sqrt(2*m*(V0-E)/hbar2);
 E=linspace(1e-9,10-1e-9,1000);
-bcCheck = @(psi,e) psi(1)*beta(e) + psi(2);
+
 % apply the propagator method at each energy, and store the results of a
 % boundary condition check in 'results'
 index=1;
-results=zeros(size(E));
+resultsQ1=zeros(size(E));
 
 for e=E
     psi = [1 ; beta(e)];
-    results(index)=bcCheck(propAllowed(e,w)*psi,e);
+    resultsQ1(index)=bcCheck(propAllowed(e,w)*psi,e);
     index = index + 1;
 end
 
 figure
-plot(E,results);
+plot(E,resultsQ1);
 xlabel('Energy');
 ylabel('f(E)');
 title('Propagator method for root finding');
 
 %% root finding for Q2
-n_root = sum(floor(abs(diff(sign(results)))/2),'omitnan');
-% find starting guesses by looking for sign changes in f(E), then
-% extracting corresponding elements of E
-guesses = cell(n_root,1);
-CA = sign(results);
-guessN = 1;
-for k =2:size(CA,2)-1
-    if (CA(k) + CA(k+1))==0
-        guesses{guessN}(1) = E(k);
-        guesses{guessN}(2) = E(k+1);
-        guessN = guessN + 1;
-    end
-end
+
+n_rootsQ1 = rootCounter(resultsQ1);
+guessesQ1 = guessFinder(resultsQ1,E);
 
 % perform secant method to find the roots to high tolerance
 % x2 = x1 - f(x1)*(x1-x0)/(f(x1)-f(x2))
-tol=1e-9;
+tol=1e-12;
 maxIter=1000;
 secant = @(x1,x0,fx1,fx0) (x0*fx1 - x1*fx0)/(fx1-fx0);
-roots = [];
+rootsQ1 = [];
 
-for k=1:n_root
-    x0 = guesses{k}(1);
-    fx0=propAllowed(x1,w)*[1 ; beta(x0)];
+for k=1:n_rootsQ1
+    x0 = guessesQ1{k}(1);
+    fx0=bcCheck(propAllowed(x0,w)*[1 ; beta(x0)],x0);
     
-    x1 = guesses{k}(2);
-    fx1=propAllowed(x1,w)*[1 ; beta(x1)];
+    x1 = guessesQ1{k}(2);
+    fx1=bcCheck(propAllowed(x1,w)*[1 ; beta(x1)],x1);
     
     iter=1;
     change=abs(x1-x0);
@@ -71,16 +59,17 @@ for k=1:n_root
         %update values for next iteration
         x0=x1;
         x1=c;
-        fx0=propAllowed(x0,w)*[1 ; beta(x0)];
-        fx1=propAllowed(x1,w)*[1 ; beta(x1)];
+        fx0=bcCheck(propAllowed(x0,w)*[1 ; beta(x0)],x0);
+        fx1=bcCheck(propAllowed(x1,w)*[1 ; beta(x1)],x1);
     end
-    roots(k) = x1;
+    rootsQ1(k) = x1;
 end
 
-% check to see how close the roots are to zeroes;
-for k=1:4
-    resultTemp = propAllowed(roots(k),w);
-    error(k)=resultTemp(3);
+% check to see how close the roots are to zeroes; %% NOT WORKING SOME
+% REASON
+for k = 1:n_rootsQ1
+    e=rootsQ1(k);
+    error(k) = bcCheck(propAllowed(e,w)*[1;beta(e)],e);
 end
 
 
@@ -91,15 +80,18 @@ s=0.2;
 m=1;
 V0=10;
 hbar2 = 0.076199682;
-
+E=linspace(1e-9,10-1e-9,1000);
 % we now have three boundary conditions, propagate 3 times: 
 
-bcCheck = @(psi) psi(1)*beta(E) + psi(2);
-
+index = 1;
 for e=E
     psi = [1;beta(e)];
     psiNew=propAllowed(e,w)*propForbid(e,s)*propAllowed(e,w)*psi;
-    resultsQ2=bcCheck(psiNew);
+    resultsQ2(index)=bcCheck(psiNew,e);
+    index = index +1;
 end
 
-n_root = sum(floor(abs(diff(sign(resultsQ2)))/2),'omitnan');
+n_rootsQ2 = rootCounter(resultsQ2);
+guessesQ2 = guessFinder(resultsQ2,E);
+
+rootsQ2 = rootFinderQ2(n_rootsQ2,guessesQ2,w,s);
