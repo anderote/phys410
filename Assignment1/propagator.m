@@ -1,4 +1,4 @@
-%% Propagator Method %% 
+% Propagator Method %% 
 % Allowed energy propagator for finite square well
 % inputs: initial conditions = psi, Energy = E, well width = w,
 %           separation of wells = w, 

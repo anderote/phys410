@@ -11,7 +11,7 @@ w=0.6;
 s=0.6;
 m=1;
 V0=10;
-E=linspace(1e-9,10-1e-9,1000);
+E=linspace(1e-9,10-1e-9,100);
 
 % apply the propagator method at each energy, and store the results of a
 % boundary condition check in 'results'
@@ -40,9 +40,12 @@ guessesQ1 = guessFinder(resultsQ1,E);
 tol=1e-12;
 maxIter=1000;
 secant = @(x1,x0,fx1,fx0) (x0*fx1 - x1*fx0)/(fx1-fx0);
-rootsQ1 = [];
+rootsQ1 = zeros(n_rootsQ1,1);
+secantIter = zeros(n_rootsQ1,1);
 
 for k=1:n_rootsQ1
+    secantCount = 1;
+    
     x0 = guessesQ1{k}(1);
     fx0=bcCheck(propAllowed(x0,w)*[1 ; beta(x0)],x0);
     
@@ -61,27 +64,56 @@ for k=1:n_rootsQ1
         x1=c;
         fx0=bcCheck(propAllowed(x0,w)*[1 ; beta(x0)],x0);
         fx1=bcCheck(propAllowed(x1,w)*[1 ; beta(x1)],x1);
+        secantCount=secantCount+1;
     end
     rootsQ1(k) = x1;
+    secantIterQ1(k)=secantCount;
 end
 
-% check to see how close the roots are to zeroes; %% NOT WORKING SOME
-% REASON
+% check to see how close the roots are to zeroes; 
 for k = 1:n_rootsQ1
     e=rootsQ1(k);
-    error(k) = bcCheck(propAllowed(e,w)*[1;beta(e)],e);
+    Accuracy(k) = bcCheck(propAllowed(e,w)*[1;beta(e)],e);
 end
 
 
 %% Question 2: 
 % double well of width 0.6nm, well separation = 0.2nm
 w=0.6;
-s=0.2;
 m=1;
 V0=10;
 hbar2 = 0.076199682;
 E=linspace(1e-9,10-1e-9,1000);
-% we now have three boundary conditions, propagate 3 times: 
+S=linspace(1e-4,10,200);
+ 
+% setup cell arrays to store value for each simulation of paramater s
+resultsQ3 = cell(size(S));
+rootsQ3 = cell(size(S));
+guessesQ3 = cell(size(S));
+n_rootsQ3 = cell(size(S));
+index=1;
+for s=S;
+   doubleWell = @(e) propAllowed(e,w)*propForbid(e,s)*propAllowed(e,w)*psi;
+   resultsTemp = zeros(size(E));
+   k=1;
+   for e=E
+       psi = [1;beta(e)];
+       psiNew = doubleWell(e);
+       resultsTemp(k)=bcCheck(psiNew,e);
+       k=k+1; 
+   end
+   
+   n_rootsTemp = rootCounter(resultsTemp);
+   guessesTemp = guessFinder(resultsTemp,E);
+   rootsTemp = rootFinderQ2(n_rootsTemp,guessesTemp,w,s);
+   
+   % assign the results for this trial of S
+   rootsQ3(k)=rootsTemp;
+   n_rootsQ3(k)=n_rootsTemp;
+   guessesQ3(k)=guessesTemp;
+   resultsQ3{index}=resultsTemp;
+   index=index+1;
+end
 
 index = 1;
 for e=E
@@ -91,7 +123,10 @@ for e=E
     index = index +1;
 end
 
-n_rootsQ2 = rootCounter(resultsQ2);
-guessesQ2 = guessFinder(resultsQ2,E);
 
-rootsQ2 = rootFinderQ2(n_rootsQ2,guessesQ2,w,s);
+propCheck= @(e)bcCheck(propAllowed(e,0.6)*[1;beta(e)],e);
+
+
+
+
+  

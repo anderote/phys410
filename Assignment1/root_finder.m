@@ -6,7 +6,7 @@
 % outputs: roots
 % count the roots
 
-function roots=root_finder(results,E,type)
+function roots=root_finder(results,E,m)
 
 beta = @(E) sqrt(2*m*(V0-E)/hbar2);
 n_root = sum(floor(abs(diff(sign(results)))/2),'omitnan');

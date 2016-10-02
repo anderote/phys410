@@ -1,0 +1,58 @@
+%% Question 2 %%
+% double well of width 0.6nm, separation variable
+% WEIRD = certain fluctuations or massive spikes in energy level
+tic();
+w=0.6;
+m=1;
+V0=10;
+hbar2 = 0.076199682;
+E=linspace(1e-9,10-1e-9,200);
+% ensures we capture s=0.2 as part of the sample
+S=linspace(0,1,101);
+ 
+% setup cell arrays to store value for each simulation of paramater s
+resultsQ2 = cell(size(S));
+rootsQ2 = cell(size(S));
+guessesQ2 = cell(size(S));
+n_rootsQ2 = cell(size(S));
+index=1;
+
+for s=S;
+   doubleWell = @(e) propAllowed(e,w)*propForbid(e,s)*propAllowed(e,w);
+   resultsTemp = zeros(size(E));
+   k=1;
+   for e=E
+       psi = [1;beta(e)];
+       psiNew = doubleWell(e)*psi;
+       resultsTemp(k)=bcCheck(psiNew,e);
+       k=k+1; 
+   end
+   
+   n_rootsTemp = rootCounter(resultsTemp);
+   guessesTemp = guessFinder(resultsTemp,E);
+   rootsTemp = rootFinderQ2(n_rootsTemp,guessesTemp,w,s);
+   
+   % assign the results for this trial of S
+   rootsQ2{index}=rootsTemp;
+   n_rootsQ2{index}=n_rootsTemp;
+   guessesQ2{index}=guessesTemp;
+   resultsQ2{index}=resultsTemp;
+   index=index+1;
+end
+
+% find the lowest energies E1 and E2 from each separation distance
+for j=1:size(S,2)
+   E1(j)=rootsQ2{j}(1);
+   E2(j)=rootsQ2{j}(2);
+end
+
+energiesQ2 = rootsQ2{21};
+
+figure;
+plot(S,E1,S,E2);
+title('Lowest energies as function of separation distance');
+xlabel('Separation distance (nm)');
+ylabel('Energy (eV)');
+legend('E1','E2');
+toc()
+
