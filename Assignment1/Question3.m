@@ -7,7 +7,7 @@ m=1;
 V0=10;
 s=0.2;
 hbar2 = 0.076199682;
-N=1:100;
+N=1:30;
 
 % Results are paramaterized by N
 resultsQ3 = cell(size(N));
@@ -17,13 +17,10 @@ n_rootsQ3 = cell(size(N));
 
 index=1;
 for n=N;
-    
-    if n==1
-        matrix=propAllowed
-    
     E=linspace(1e-9,10-1e-9,1000);
     resultsTemp = zeros(size(E));
     k=1;
+    
     for e=E
         psi = [1;beta(e)];
         psiNew = nWell(n,e)*psi;
