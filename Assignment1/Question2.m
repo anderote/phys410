@@ -2,10 +2,7 @@
 % double well of width 0.6nm, separation variable
 % INTERESTING: Separations above 1.15 nm yield no energies allowable
 tic();
-w=0.6;
-m=1;
-V0=10;
-hbar2 = 0.076199682;
+run('constants.m');
 sampleSize=300;
 E=linspace(1e-9,10-1e-9,sampleSize);
 % ensures we capture s=0.2 as part of the sample

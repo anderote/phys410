@@ -3,8 +3,7 @@
 % regions
 
 function matrix=nWell(n,e)
-w=0.6;
-s=0.2;
+run('constants.m');
 
 iter=0;
 j=1;

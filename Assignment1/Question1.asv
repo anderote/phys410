@@ -4,7 +4,8 @@ format long
 
 % define constants and energy space
 run('constants.m');
-E=linspace(1e-9,10-1e-9,5);
+Espace = floor(10*log(trial+1));
+E=linspace(1e-9,10-1e-9,Espace);
 
 % apply the propagator method at each energy, and store the results of a
 % boundary condition check in 'results'
@@ -23,6 +24,7 @@ end
     ylabel('f(E)');
     title('Propagator method for root finding');
 
+root finding for Q1
 
 n_rootsQ1 = rootCounter(resultsQ1);
 guessesQ1 = guessFinder(resultsQ1,E);

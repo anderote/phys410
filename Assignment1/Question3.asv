@@ -7,38 +7,54 @@ m=1;
 V0=10;
 s=0.2;
 hbar2 = 0.076199682;
-E=linspace(1e-9,10-1e-9,1000);
-N=1:10;
+N=1:100;
 
 % Results are paramaterized by N
+Espace = cell(size(N));
+tResults = cell(size(N));
 resultsQ3 = cell(size(N));
 rootsQ3 = cell(size(N));
 guessesQ3 = cell(size(N));
 n_rootsQ3 = cell(size(N));
 
-index=1;
-for n=N;
-    resultsTemp = zeros(size(E));
+parfor n=N;
+    
+    Espace{n}=linspace(1e-9,10-1e-9,n*20);
+    tResults{n} = zeros(size(Espace{n}));
     k=1;
-    for e=E
-        psi = [1;beta(e)];
-        psiNew = nWell(n,e)*psi;
-        resultsTemp(k)=bcCheck(psiNew,e);
+    for e=Espace{n}
+        psiNew = nWell(n,e)*[1;beta(e)];
+        tResults{n}(k)=bcCheck(psiNew,e);
         k=k+1;
     end
     
-    n_rootsTemp = rootCounter(resultsTemp);
-    if n_rootsTemp>0
-        guessesTemp = guessFinder(resultsTemp,E);
-        rootsTemp = rootFinderQ3(n_rootsTemp,guessesTemp,n);
-        rootsQ3{index}=rootsTemp;
-        n_rootsQ3{index}=n_rootsTemp;
-        guessesQ3{index}=guessesTemp;
-    end
+    n_rootsQ3{n} = rootCounter(tResults{n});
+    guessesQ3{n} = guessFinder(tResults{n},Espace{n});
+    rootsQ3{n}=zeros(n_rootsQ3{n},1);
     
-    % assign the results for this trial of S
-    resultsQ3{index}=resultsTemp;
-    index=index+1;
+    % root finding
+    for k=1:n_rootsq3{n}
+        x0 = guessesQ3{n}{k}(1);
+        fx0=bcCheck(nWell(n,x0)*[1 ; beta(x0)],x0);
+        
+        x1 = guessesQ3{n}{k}(2);
+        fx1=bcCheck(nWell(n,x1)*[1 ; beta(x1)],x1);
+        
+        iter=1;
+        change=abs(x1-x0);
+        while ((abs(fx1)>tol ) || abs(fx0) > tol ) && (iter<maxIter) &&(change>tol)
+            change=abs(x1-x0);
+            iter= iter +1;
+            c=secant(x1,x0,fx1,fx0);
+            
+            %update values for next iteration
+            x0=x1;
+            x1=c;
+            fx0=bcCheck(nWell(n,x0)*[1 ; beta(x0)],x0);
+            fx1=bcCheck(nWell(n,x1)*[1 ; beta(x1)],x1);
+        end
+        rootsQ3{n}(k) = x1;
+    end
 end
 
 % cleanup the data for plotting in a sensible manner
@@ -49,11 +65,10 @@ for k=N
     data = zeros(length(rootData),2);
     data(:,1) = k;
     data(:,2) = rootData;
-    scatter(data);
+    scatter(data(:,1),data(:,2),'r.');
     title('Lowest energies as function of separation distance');
-    xlabel('Separation distance (nm)');
-    ylabel('Energy (eV)');
-    legend('E1','E2');
-    toc()
+    xlabel('N wells');
+    ylabel('Energy States (eV)');
+    
 end
-
+toc()
